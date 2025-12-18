@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "daisyui";
+
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+.aurora-bg {
+  background: radial-gradient(circle at 20% 20%, rgba(45, 15, 80, 0.6), transparent 60%),
+              radial-gradient(circle at 80% 30%, rgba(30, 85, 130, 0.5), transparent 60%),
+              radial-gradient(circle at 50% 80%, rgba(120, 30, 160, 0.5), transparent 70%);
+  background-color: #0A0A12;
+  animation: auroraMove 16s ease-in-out infinite alternate;
+}
+
+@keyframes auroraMove {
+  0% {
+    background-position: 10% 20%, 70% 30%, 50% 90%;
+  }
+  100% {
+    background-position: 20% 30%, 60% 20%, 55% 70%;
+  }
+}
+
+/* Glass card enhancement */
+.glass-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 0 30px rgba(0,0,0,0.4);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Hide number input arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
