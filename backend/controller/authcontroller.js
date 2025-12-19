@@ -92,13 +92,22 @@ export const login = async (req, res) => {
 
 export const googlelogin = async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code } = req.body;
 
-    const { tokens } = await oauth2client.getToken(code);
+    const { tokens } = await oauth2client.getToken({
+      code,
+      redirect_uri: "postmessage",
+    });
+
     oauth2client.setCredentials(tokens);
 
     const userRes = await axios.get(
-      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
+      "https://www.googleapis.com/oauth2/v1/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+        },
+      }
     );
 
     const { email, name } = userRes.data;
@@ -109,7 +118,6 @@ export const googlelogin = async (req, res) => {
     );
 
     let user;
-
     if (result.rows.length === 0) {
       const insertRes = await db.query(
         `INSERT INTO userdetails (name,email,password) VALUES ($1,$2,$3) RETURNING *`,
@@ -133,11 +141,10 @@ export const googlelogin = async (req, res) => {
       user,
     });
   } catch (err) {
-    console.log(err);
+    console.error("Google login error:", err.response?.data || err.message);
     return res.status(500).json({ message: "Google login failed" });
   }
 };
-
 
 
 const getclients = async (req, res) => {

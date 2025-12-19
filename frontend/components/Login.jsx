@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 const Login = () => {
-  const { setId,url, id,setlogged} = useContext(Context);
+  const { setId, url, id, setlogged } = useContext(Context);
   const [isSignup, setIsSignup] = useState(true);
   const [user, setuser] = useState({ name: "", email: "", password: "" });
 
@@ -16,12 +16,13 @@ const Login = () => {
   const responsegoogle = async (authResult) => {
     try {
       if (authResult.code) {
-        const response = await axios.get(
-          `${url}/google?code=${authResult.code}`
-        );
-        const { token, user } = response.data;
+        const response = await axios.post(`${url}/google`, {
+          code: authResult.code,
+        });
+
+        const { token } = response.data;
         localStorage.setItem("auth-token", token);
-        setlogged(response.data.logged)
+        setlogged(response.data.logged);
         if (isSignup) {
           navigate("/details");
         } else {
@@ -40,12 +41,13 @@ const Login = () => {
   });
 
   const handlesubmit = async (e) => {
-     e.preventDefault();
-    if(!user.email || !user.password ) {
-      toast.error("Fill out all the details")
-      return
+    e.preventDefault();
+    console.log("clicked")
+    if (!user.email || !user.password) {
+      toast.error("Fill out all the details");
+      return;
     }
-   
+
     const link = `${url}/${isSignup ? "signin" : "login"}`;
     const payload = {
       email: user.email,
@@ -57,41 +59,43 @@ const Login = () => {
       const response = await axios.post(link, payload, {
         headers: { "Content-Type": "application/json" },
       });
-      const data = response.data
-      setId(data.userid)
+      const data = response.data;
+      setId(data.userid);
       if (data.success && data.token) {
-        localStorage.setItem("auth-token",data.token)
-        toast.success(`${data.message}`,{
+        localStorage.setItem("auth-token", data.token);
+        toast.success(`${data.message}`, {
           position: "top-center",
-          duration:1000,
-          icon:"✅"
-        })
-        console.log(data.signin)
-        if(isSignup) {
-          setTimeout(()=>{navigate("/details")},1000)
+          duration: 1000,
+          icon: "✅",
+        });
+        console.log(data.signin);
+        if (isSignup) {
+          setTimeout(() => {
+            navigate("/details");
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
         }
-        else{
-          setTimeout(()=>{navigate("/")},1000)
-        }
-      }
-      else{
-        toast.error(`${data.message}`,{
+      } else {
+        toast.error(`${data.message}`, {
           position: "top-center",
-          duration:1000,
-          icon:"❌"
-        })
+          duration: 1000,
+          icon: "❌",
+        });
       }
     } catch (error) {
-      toast.error("Something went wrong. Try again" , {
+      toast.error("Something went wrong. Try again", {
         position: "top-center",
         duration: 1000,
         style: { fontSize: "16px" },
         icon: "❌",
       });
-      console.log(error)
+      console.log(error);
     }
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -40 }}
@@ -99,27 +103,26 @@ const Login = () => {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="min-h-screen flex items-center justify-center px-5 relative"
     >
-      
       <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
-              className="absolute inset-0 -z-10 pointer-events-none"
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
-                className="absolute w-[400px] h-[400px] bg-purple-600 blur-[150px] top-10 left-1/3"
-              />
-      
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 1.4, delay: 0.8, ease: "easeOut" }}
-                className="absolute w-[400px] h-[400px] bg-blue-500 blur-[170px] bottom-10 right-1/3"
-              />
-            </motion.div>
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.4 }}
+        transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
+        className="absolute inset-0 -z-10 pointer-events-none"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.4, delay: 0.4, ease: "easeOut" }}
+          className="absolute w-[400px] h-[400px] bg-purple-600 blur-[150px] top-10 left-1/3"
+        />
+
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.4, delay: 0.8, ease: "easeOut" }}
+          className="absolute w-[400px] h-[400px] bg-blue-500 blur-[170px] bottom-10 right-1/3"
+        />
+      </motion.div>
 
       {/* Form Card */}
       <motion.div
@@ -140,7 +143,6 @@ const Login = () => {
         <form className="space-y-5" onSubmit={handlesubmit}>
           {isSignup && (
             <motion.input
-              
               type="text"
               placeholder="Full Name"
               value={user.name}
@@ -215,4 +217,3 @@ const Login = () => {
 };
 
 export default Login;
-
