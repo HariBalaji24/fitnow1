@@ -46,7 +46,7 @@ const Login = () => {
       return
     }
    
-    const url = `${url}/${isSignup ? "signin" : "login"}`;
+    const link = `${url}/${isSignup ? "signin" : "login"}`;
     const payload = {
       email: user.email,
       password: user.password,
@@ -54,7 +54,7 @@ const Login = () => {
     };
 
     try {
-      const response = await axios.post(url, payload, {
+      const response = await axios.post(link, payload, {
         headers: { "Content-Type": "application/json" },
       });
       const data = response.data
@@ -215,3 +215,4 @@ const Login = () => {
 };
 
 export default Login;
+
