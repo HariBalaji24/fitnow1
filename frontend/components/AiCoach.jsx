@@ -55,7 +55,7 @@ const AiCoach = () => {
   try {
     seloading(true);
 
-    const result = await axios.post("${url}/aicoach", {
+    const result = await axios.post(`${url}/aicoach`, {
       input: userInput,
       id: id,
     });
@@ -141,3 +141,4 @@ const AiCoach = () => {
 };
 
 export default AiCoach;
+
