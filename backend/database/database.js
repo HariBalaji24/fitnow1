@@ -11,3 +11,5 @@ const db = new Client({
 db.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch(err => console.error("❌ Database error:", err));
+ 
+  export default db
