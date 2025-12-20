@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import { oauth2client } from "../utils/googleconfig.js";
 
-const secretkey = process.env.secretkey;
+const secretkey = process.env.SECRETKEY;
 
 export const signin = async (req, res) => {
   try {
