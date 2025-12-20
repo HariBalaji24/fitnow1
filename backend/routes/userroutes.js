@@ -7,7 +7,7 @@ import progresscontroller from "../controller/progresscontroller.js"
 const router = express.Router()
 
 router.route("/allclients").get(authcontroller.getclients)
-router.route("/google").post(authcontroller.googlelogin)
+router.route("/google").get(authcontroller.googlelogin)
 router.route("/getid").get(authcontroller.getid)
 
 router.route("/signin").post(authcontroller.signin)
