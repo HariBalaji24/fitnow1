@@ -1,4 +1,8 @@
+import dotenv from "dotenv";
 import pg from "pg";
+
+dotenv.config(); 
+
 const { Client } = pg;
 
 const db = new Client({
@@ -11,5 +15,5 @@ const db = new Client({
 db.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch(err => console.error("❌ Database error:", err));
- 
-  export default db
+
+export {db}
