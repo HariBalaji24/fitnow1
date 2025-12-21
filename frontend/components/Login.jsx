@@ -16,7 +16,7 @@ const Login = () => {
   const responsegoogle = async (authResult) => {
     try {
       if (authResult.code) {
-        const response = await axios.post(`${url}/google`, {
+        const response = await axios.get(`${url}/google`, {
           code: authResult.code,
         });
 

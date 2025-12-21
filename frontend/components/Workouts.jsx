@@ -18,7 +18,7 @@ console.log(id)
 
       try {
         const response = await axios.get(
-          `${id}/getworkouts/${id}`
+          `${url}/getworkouts/${id}`
         );
         setWorkouts(response.data);
       } catch (error) {
