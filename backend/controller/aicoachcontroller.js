@@ -1,11 +1,14 @@
 import { db } from "../database/database.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAi from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
+const openai = new OpenAi({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.API_KEY,
+});
 const aicoach = async (req, res) => {
-  const { input,id,sender } = req.body;
-  console.log("started generating resposne");
+  const { input,id } = req.body;
+  try {
+    console.log("started generating resposne");
   const prompt = `You are AI COACH MASTER, the official advanced AI assistant of FITNOW.
 
 FITNOW is an AI-powered fitness and wellness tracker. You help users by giving expert advice on fitness-related topics only.
@@ -39,21 +42,43 @@ For general FAQ inputs:
 Respond in two to four clear points.
 
 
+
 Goal:
 Be the most helpful, smart, and friendly fitness assistant on the internet.
 here is the question ${input}
 `;
-  const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL });
-  const result1 = await model.generateContent(prompt);
-  const data = result1.response.text();
-  const modified = data.split("\n").map((rows, index) => {
-    return rows.replace(/[*#]/g, "")
-  });
+let airesponse
+      try {
+        
+        const completion = await openai.chat.completions.create({
+          model: "mistralai/devstral-2512:free",
+          max_tokens : 1000,
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        });
+        airesponse = completion.choices[0].message.content;
+        
+      } catch (error) {
+        console.log(error);
+        
+      }
+  console.log(airesponse)
+  const modified = airesponse.replace(/[*#-]/g, "")
 
+  console.log(airesponse)
+  console.log(modified)
   const user = await db.query(`insert into aicoach (user_id,sender,message) values ($1,$2,$3) returning sender`,[id,"you",input])
 
   const ai = await db.query(`insert into aicoach (user_id,sender,message) values ($1,$2,$3) returning sender`,[id,"ai",modified])
   res.status(200).json({ message: modified });
+  } catch (error) {
+    console.log(error)
+  }
+  
 };
 
 const getresponse = async (req,res) => {

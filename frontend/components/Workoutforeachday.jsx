@@ -9,7 +9,7 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 const Workoutforeachday = () => {
   const location = useLocation();
   const today = location.pathname.split("/workouts/")[1];
-  const { id } = useContext(Context);
+  const { id,url } = useContext(Context);
 
   const [indiWorkout, setIndiWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const Workoutforeachday = () => {
         name:exercise
    }
     try {
-      await axios.post(`http://localhost:3000/workoutdone/${id}`, details);
+      await axios.post(`${url}/workoutdone/${id}`, details);
     } catch (error) {
       console.log(error);
     }
@@ -37,7 +37,7 @@ const Workoutforeachday = () => {
 
     async function getworkoutsdone() {
       const res = await axios.get(
-        `http://localhost:3000/getchangedworkout/${id}`,
+        `${url}/getchangedworkout/${id}`,
         { params: { day: Number(today) } }
       );
 
@@ -60,7 +60,7 @@ const Workoutforeachday = () => {
     async function fetchDayWorkout() {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:3000/getworkouts/${id}`);
+        const res = await axios.get(`${url}/getworkouts/${id}`);
 
         const filtered = res.data.find((d) => d.day.toString() === today);
 
@@ -73,12 +73,12 @@ const Workoutforeachday = () => {
 
     fetchDayWorkout();
   }, [today, id]);
-
+console.log(indiWorkout)
   useEffect(() => {
     if (!indiWorkout || !indiWorkout.exercises) return;
 
     const cleaned = indiWorkout.exercises.replace(/["{}]/g, "");
-    const items = cleaned.split(")").filter((e) => e.trim() !== "");
+    const items = cleaned.split("), ").filter((e) => e.trim() !== "");
 
     const total = items.length;
     const completed = Object.values(workoutsdone).filter(Boolean).length;
@@ -112,11 +112,11 @@ const Workoutforeachday = () => {
 
   const cleaned = indiWorkout.exercises.replace(/["{}]/g, "");
   const items = cleaned
-    ?.split(") ")
-    .map((e) => (e.trim().endsWith(")") ? e.trim() : e.trim() + ")"));
+    ?.split("), ")
+    .map((e) => (e.trim().endsWith("),") ? e.trim() : e.trim() + ")"));
 
   const completed = Object.values(workoutsdone).filter(Boolean).length;
-
+console.log("tems :",items)
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -156,9 +156,7 @@ const Workoutforeachday = () => {
         </div>
       )}
 
-      {/* ---------------------------
-          Exercise Grid
-      ---------------------------- */}
+      
       {indiWorkout.focus !== "Rest" && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 px-5 mx-auto">
           {items.map((rows, index) => {
@@ -172,7 +170,7 @@ const Workoutforeachday = () => {
             const reps = parts[0]?.replace("x", " x ");
             const desc = parts[1];
             const calories = Math.floor(parts[2]?.replace("~", "").replace(" kcal", "")/4);
-            const target = parts[3]?.replace(" ", " , ");
+            const target = parts[3]?.replace(", ", " , ");
 
             const isDone = workoutsdone[index];
 

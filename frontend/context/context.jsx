@@ -9,7 +9,7 @@ export const ContextProvider = ({ children }) => {
   const [id, setId] = useState(null);
   const [details, setDetails] = useState(null);
   const [workoutgenerated, setworkoutgenerated] = useState();
-  const [dietgenerated, setdietgenerated] = useState();
+  const [dietgenerated, setdietgenerated] = useState(false);
   const [detailsfilled,setdetailsfilled] = useState(false)
   const [logged,setlogged] = useState(false)
   const hasFetchedDetails = useRef(false);
@@ -38,7 +38,7 @@ export const ContextProvider = ({ children }) => {
     async function fetchDetails() {
       try {
         const res = await axios.get(`${url}/userdetails/${id}`);
-
+        
         setDetails(res.data);
         hasFetchedDetails.current = true;
       } catch (err) {
@@ -49,48 +49,60 @@ export const ContextProvider = ({ children }) => {
     fetchDetails();
   }, [id]);
   
-  useEffect(() => {
-    async function generateWorkout() {
-      if (!detailsfilled || !details || !id || workoutgenerated) return;
-      try {
-        setworkoutgenerated(false);
-        const res = await axios.post(
-          `${url}/workout-plan/${id}`,
-          details
-        );
-        if(res.data) {
-          setworkoutgenerated(true)
-        }
-      } catch (err) {
-        console.error("Error generating workout plan:", err);
-      }
-    }
+  console.log(id)
+  console.log("details",details)
 
-    generateWorkout();
-  }, [detailsfilled,id])
+
+  useEffect(() => {
+  if (!id) return;
+  if (!details) return;
+  if (workoutgenerated) return;
+
+  const generateWorkout = async () => {
+    try {
+      console.log("started generating workout");
+      const res = await axios.post(
+        `${url}/workout-plan/${id}`,
+        details,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      if (res.data?.success) {
+        setworkoutgenerated(true);
+      }
+    } catch (err) {
+      console.error("Error generating workout plan:", err);
+    }
+  };
+
+  generateWorkout();
+}, [id, details]);
+
+
+
   
   useEffect(() => {
-    if (!details || !id || dietgenerated) return;
+  if (!id || !details || dietgenerated) return;
 
-    async function generatedietplan() {
-      try {
-        const res = await axios.post(
-          `${url}/diet-plan/${id}`,
-          details
-        );
+  async function generatedietplan() {
+    try {
+      console.log("started generating diet plan");
+      const res = await axios.post(
+        `${url}/diet-plan/${id}`,
+        details
+      );
 
-        if(res.data){
-          setdietgenerated(true)
-        }
-
-        
-      } catch (err) {
-        console.error("Error generating workout plan:", err);
+      if (res.data?.success) {
+        setdietgenerated(true);
       }
+    } catch (err) {
+      console.error("Error generating diet plan:", err);
     }
+  }
 
-    generatedietplan();
-  }, [details, dietgenerated,id]);
+  generatedietplan();
+}, [id, details, dietgenerated]);
+
 
   return (
     <Context.Provider

@@ -5,7 +5,7 @@ const openai = new OpenAi({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.API_KEY,
 });
-let airesponse;
+
 const userdetails = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -24,6 +24,7 @@ const userdetails = async (req, res) => {
     res.status(500).json({ message: "Error fetching user details" });
   }
 };
+
 const workoutrecommend = async (req, res) => {
   const {user_id} = req.params
   try {
@@ -39,6 +40,7 @@ const workoutrecommend = async (req, res) => {
       duration,
       goal,
     } = req.body;
+    console.log(req.body)
     const existing = await db.query("SELECT * FROM workouts WHERE user_id=$1", [
       user_id,
     ]);
@@ -50,8 +52,6 @@ const workoutrecommend = async (req, res) => {
       });
     } else {
       console.log("Generating new workout plan...");
-
-      // 2️⃣ Generate workout using Gemini
       
   const prompt = `
 You are a certified personal trainer.
@@ -107,10 +107,11 @@ No unwanted text should appear outside the table.
 * Do not include roles, reasoning, or chain-of-thought.
 
 `;
-
+let airesponse
       try {
+        
         const completion = await openai.chat.completions.create({
-          model: "amazon/nova-2-lite-v1:free",
+          model: "mistralai/devstral-2512:free",
           max_tokens : 6000,
           messages: [
             {
@@ -120,11 +121,11 @@ No unwanted text should appear outside the table.
           ],
         });
         airesponse = completion.choices[0].message.content;
+        
       } catch (error) {
         console.log(error);
         
       }
-
     function parseTable(table) {
   const lines = table.split("\n").slice(2); // skip headers
 
@@ -189,28 +190,47 @@ const getallworkouts = async (req, res) => {
 
 
 const dietrecommend = async (req, res) => {
-  const {
-    age,
-    gender,
-    height,
-    weight,
-    condition,
-    location,
-    frequency,
-    duration,
-    goal,
-    diet,
-    meal,
-    allergy,
-  } = req.body;
-  const {user_id} = req.params
-  const already = await db.query(`select * from diet where user_id=$1`, [
-    user_id,
-  ]);
-  if (already.rows.length > 0) {
-    return null;
-  } else {
+  try {
+    const { user_id } = req.params;
+    const {
+      age,
+      gender,
+      height,
+      weight,
+      condition,
+      location,
+      frequency,
+      duration,
+      goal,
+      diet,
+      meal,
+      allergy,
+    } = req.body;
+
+    // ✅ BASIC VALIDATION
+    if (!age || !gender || !height || !weight || !goal) {
+      return res.status(400).json({
+        success: false,
+        message: "Incomplete diet details",
+      });
+    }
+
+    // ✅ CHECK IF DIET ALREADY EXISTS
+    const already = await db.query(
+      "SELECT 1 FROM diet WHERE user_id=$1",
+      [user_id]
+    );
+
+    if (already.rows.length > 0) {
+      return res.json({
+        success: false,
+        message: "Diet already exists",
+      });
+    }
+
     console.log("diet started");
+
+    // ✅ PROMPT
     const prompt = `You are a certified nutritionist.
 Create a structured 7-day diet plan for a ${age}-year-old ${gender}, ${height} cm, ${weight} kg located in ${location}.
 
@@ -222,94 +242,87 @@ Diet type: ${diet}
 Meal preference: ${meal} (3 meals + 2 snacks/day)
 Allergies: ${allergy}
 
-STRICT OUTPUT FORMAT (FOLLOW ALL RULES):
-------------------------------------------------------
-⚠️ OUTPUT MUST BE A SINGLE MARKDOWN TABLE
-⚠️ NO text before or after the table
-⚠️ EXACT 7 rows: Monday → Sunday
-⚠️ Columns: Day | Meals | Calories Total
-⚠️ Meals column must contain ALL 5 meals — each formatted:
-Breakfast: Meal Name (Portion — 1-line key benefit — ~___ kcal — Main nutrients),
-Snack: Meal Name (...)
-Lunch: Meal Name (...)
-Snack: Meal Name (...)
-Dinner: Meal Name (...)
-⚠️ Every meal must include:
-- Portion size
-- ~Calories
-- 1 benefit phrase
-⚠️ Keep descriptions short & crisp
-⚠️ Indian foods only (based on user location)
-
-STRICT MARKDOWN TABLE FORMATTING:
-------------------------------------------------------
+STRICT OUTPUT FORMAT:
 | Day | Meals | Total Calories |
 | --- | --- | --- |
-| Monday | ... | ... |
-| Tuesday | ... | ... |
-...
-------------------------------------------------------
-
-RULES:
-✔ Every row MUST follow this exact alignment:
-| **Friday** | **Breakfast:** ...
-^^ SPACE before and after every |
-✔ Day column MUST NOT contain any other text
-✔ Give proper breakfast, lunch,dinner
-✔ No bold markers near the pipe divider ( | )
-✔ EXACT format for every row:
 | Monday | Breakfast(...), Snack(...), Lunch(...), Snack(...), Dinner(...) | 2800 cal |
-
+(7 rows only)
 `;
+
+    // ✅ AI CALL
+    let airesponse;
     try {
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          max_tokens : 2000,
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        });
-        airesponse = completion.choices[0].message.content;
-        console.log(airesponse)
-      } catch (error) {
-        console.log(error);
-        
-      }
-    const rows = airesponse.split("\n").slice(2); 
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        max_tokens: 2000,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      airesponse = completion.choices?.[0]?.message?.content;
+    } catch (err) {
+      console.error(" error:", err);
+      return res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+
+    // ✅ VALIDATE AI RESPONSE
+    if (!airesponse || typeof airesponse !== "string") {
+      return res.status(500).json({
+        success: false,
+        message: "Empty AI response",
+      });
+    }
+
+    const rows = airesponse
+  .split("\n")
+  .filter(line => line.trim().startsWith("|") && !line.includes("---"));
+
 const result = [];
 
-rows.forEach((line) => {
-  if (!line.trim().startsWith("|")) return;
+for (const row of rows) {
+  const cols = row.split("|").map(c => c.trim()).filter(Boolean);
+  if (cols.length !== 3) continue;
 
-  const cols = line.split("|").map((c) => c.trim());
+  const day = cols[0];
+  const mealsText = cols[1];
+  const totalcalories = cols[2].replace("cal", "").trim();
 
-  const day = cols[1];              // Monday / Tuesday / etc.
-  const meals = cols[2];            // entire meals string
-  const totalcalories = cols[3];    // "~2100 kcal"
- 
-  const breakfast = meals.split("Breakfast: ")[1]?.split(", Snack:")[0];
-  const snack1 = meals.split("Snack: ")[1]?.split(", Lunch: ")[0];
-  const lunch = meals.split("Lunch: ")[1]?.split(", Snack: ")[0];
-  const snack2 = meals.split("Snack: ")[2]?.split(", Dinner: ")[0];
-  const dinner = meals.split("Dinner: ")[1];
+  // Regex extraction
+  const mealMatches = mealsText.match(
+    /Breakfast\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Lunch\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Dinner\s*\((.*?)\)/i
+  );
+
+  if (!mealMatches) continue;
+
+  const [, breakfast, snack1, lunch, snack2, dinner] = mealMatches;
 
   result.push({
     day,
-    breakfast: breakfast?.trim(),
-    snack1: snack1?.trim(),
-    lunch: lunch?.trim(),
-    snack2: snack2?.trim(),
-    dinner: dinner?.trim(),
-    totalcalories: totalcalories?.replace("kcal", "cal"),
+    breakfast,
+    snack1,
+    lunch,
+    snack2,
+    dinner,
+    totalcalories,
   });
-});
+}
 
-    for (let day of result) {
+if (result.length !== 7) {
+  return res.status(500).json({
+    success: false,
+    message: "Invalid diet format generated",
+  });
+}
+
+
+    console.log(result)
+    for (const day of result) {
       await db.query(
-        "INSERT INTO diet (user_id, dayname, breakfast,snack1,lunch,snack2,dinner, totalcalories) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
+        `INSERT INTO diet 
+         (user_id, dayname, breakfast, snack1, lunch, snack2, dinner, totalcalories)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
         [
           user_id,
           day.day,
@@ -324,11 +337,18 @@ rows.forEach((line) => {
     }
 
     console.log("diet plan saved:", user_id);
+
     return res.json({
       success: true,
-      message: "diet plan added successfully",
-      plan: result,
-      airesponse:airesponse
+      message: "Diet plan added successfully",
+      plan: airesponse,
+    });
+
+  } catch (error) {
+    console.error("Diet controller error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate diet plan",
     });
   }
 };
@@ -358,6 +378,7 @@ END;`,
 const workoutdone = async (req, res) => {
   const { user_id } = req.params;
   const { day, exercise, isdone, name } = req.body;
+  console.log(req.body)
   const alreadyadded = await db.query(
     `select * from workoutdone where day=$1 and exercise=$2 and user_id=$3`,
     [day, exercise, user_id]
@@ -395,7 +416,6 @@ const getchangedworkout = async (req, res) => {
   }
 };
 
-console.log("resposne",airesponse);
 
 export default {
   workoutrecommend,

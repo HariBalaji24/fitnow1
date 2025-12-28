@@ -7,14 +7,14 @@ import { motion } from "framer-motion";
 
 const Diet = () => {
   const [dietplan, setdietplan] = useState([]);
-  const { id, token } = useContext(Context);
+  const { id, token, url } = useContext(Context);
 
   useEffect(() => {
     if (!id) return;
 
     async function fetchDiet() {
       try {
-        const res = await axios.get(`http://localhost:3000/getdietplan/${id}`);
+        const res = await axios.get(`${url}/getdietplan/${id}`);
         setdietplan(res.data);
       } catch (error) {
         console.error("Error fetching diet:", error);
@@ -150,7 +150,7 @@ const Diet = () => {
                     )}
 
                     <td className="p-3 border border-purple-800 text-center font-semibold text-purple-300">
-                      {day.totalcalories.replace("cal", "")}
+                      {day.totalcalories}  {/* .replace("cal", "") */}
                     </td>
                   </tr>
                 ))}

@@ -106,7 +106,7 @@ const Details = () => {
     try {
       data.userid = id;
       const response = await axios.post(`${url}/adddetails`, data);
-      setdetailsfilled(response.data.detailsfilled)
+      setdetailsfilled(true)
       toast.success("Details saved successfully!", {
         position: "top-center",
       });

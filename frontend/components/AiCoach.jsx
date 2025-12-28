@@ -49,7 +49,7 @@ const AiCoach = () => {
 
   const userInput = input;
   setmessages(prev => [...prev, { you: userInput }]);
-
+console.log(userInput)
   setinput("");
 
   try {

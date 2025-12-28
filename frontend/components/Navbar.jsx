@@ -10,7 +10,7 @@ const Navbar = () => {
     localStorage.removeItem("auth-token");
     window.location.reload(); 
   };
-console.log(logged)
+  
   useEffect(()=>{
 
   },[logged])
