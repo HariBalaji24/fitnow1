@@ -35,7 +35,7 @@ const dietSchema = z.object({
 
 const Details = () => {
   const navigate = useNavigate();
-  const { id,token,url, setdetailsfilled, logged } = useContext(Context);
+  const { id,token,url, detailsfilled,setdetailsfilled, logged } = useContext(Context);
   const [currpage, setcurrpage] = useState(0);
   const steps = ["Personal", "Body", "Workout", "Diet"];
 
@@ -57,9 +57,7 @@ const Details = () => {
     allergy: "",
   });
 
-  useEffect(()=>{
-
-  },[id])
+ 
   
   const validatePage = () => {
     try {
@@ -83,10 +81,10 @@ const Details = () => {
   const prevPage = () => setcurrpage((prev) => prev - 1);
 
   useEffect(()=>{
-    if(logged) {
+    if(detailsfilled) {
       navigate("/")
     }
-  },[logged])
+  },[detailsfilled])
   
   useEffect(() => {
     if (data.height && data.weight) {

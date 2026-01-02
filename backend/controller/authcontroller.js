@@ -9,7 +9,7 @@ const secretkey = process.env.SECRETKEY;
 export const signin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
+if (!code) return res.status(400).json({ message: "No code provided" });
     const exists = await db.query(
       "SELECT * FROM userdetails WHERE email=$1",
       [email]
@@ -94,20 +94,11 @@ export const googlelogin = async (req, res) => {
   try {
     const { code } = req.body;
 
-    const { tokens } = await oauth2client.getToken({
-      code,
-      redirect_uri: "postmessage",
-    });
-
+    const { tokens } = await oauth2client.getToken({code});
     oauth2client.setCredentials(tokens);
 
     const userRes = await axios.get(
-      "https://www.googleapis.com/oauth2/v1/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${tokens.access_token}`,
-        },
-      }
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
     );
 
     const { email, name } = userRes.data;
@@ -153,7 +144,8 @@ const getclients = async (req, res) => {
 };
 
 const adddetails = async (req, res) => {
-  const {
+  try {
+    const {
     userid,
     firstname,
     secondname,
@@ -194,6 +186,10 @@ const adddetails = async (req, res) => {
     ]
   );
   res.status(200).json({ message: "details saved", detailsfilled:true });
+  } catch (error) {
+    console.log(error)
+  }
+  
 };
 
 

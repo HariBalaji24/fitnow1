@@ -29,8 +29,8 @@ console.log(id)
     }
 
     fetchWorkouts();
-  }, [id,workoutgenerated]);
-
+  }, [workoutgenerated,id]);
+  console.log(workoutgenerated)
  return (
   <div className="min-h-screen w-full  text-white flex flex-col items-center">
     
@@ -85,7 +85,7 @@ console.log(id)
     {token && (
       <>
         {/* LOADING / GENERATING — NORMAL div */}
-        {workoutgenerated && (
+        {!workoutgenerated && (
           <div className="min-h-[65vh] mt-30 flex flex-col items-center justify-center text-center px-4">
             <DotLottieReact
               src="https://lottie.host/cbe822dd-0556-44e4-aa43-6d113439f139/IJCf43WJQh.lottie"

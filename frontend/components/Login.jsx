@@ -16,13 +16,13 @@ const Login = () => {
   const responsegoogle = async (authResult) => {
     try {
       if (authResult.code) {
-        const response = await axios.get(`${url}/google`, {
+        const response = await axios.post(`http://localhost:3000/google`, {
           code: authResult.code,
         });
 
         const { token } = response.data;
         localStorage.setItem("auth-token", token);
-        setlogged(response.data.logged);
+        setlogged(true);
         if (isSignup) {
           navigate("/details");
         } else {
@@ -30,6 +30,11 @@ const Login = () => {
         }
       }
     } catch (error) {
+      toast.error(`${error.message}`, {
+          position: "top-center",
+          duration: 1000,
+          icon: "❌",
+        });
       console.error(error);
     }
   };
@@ -42,7 +47,6 @@ const Login = () => {
 
   const handlesubmit = async (e) => {
     e.preventDefault();
-    console.log("clicked")
     if (!user.email || !user.password) {
       toast.error("Fill out all the details");
       return;
@@ -62,13 +66,13 @@ const Login = () => {
       const data = response.data;
       setId(data.userid);
       if (data.success && data.token) {
+        setlogged(true)
         localStorage.setItem("auth-token", data.token);
         toast.success(`${data.message}`, {
           position: "top-center",
           duration: 1000,
           icon: "✅",
         });
-        console.log(data.signin);
         if (isSignup) {
           setTimeout(() => {
             navigate("/details");

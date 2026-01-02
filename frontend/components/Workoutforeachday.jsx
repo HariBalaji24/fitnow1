@@ -9,22 +9,24 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 const Workoutforeachday = () => {
   const location = useLocation();
   const today = location.pathname.split("/workouts/")[1];
-  const { id,url } = useContext(Context);
+  const { id, url } = useContext(Context);
 
   const [indiWorkout, setIndiWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [workoutsdone, setworkoutsdone] = useState({});
 
-  const toggleDone = async (index,exercise) => {
+  const toggleDone = async (index, exercise, calories) => {
     const newvalue = !workoutsdone[index];
-    
-    setworkoutsdone((prev) => ({ ...prev, [index]: newvalue  }));
-   const details= {
-    day: indiWorkout.day,
-        exercise: index,
-        isdone: newvalue,
-        name:exercise
-   }
+
+    setworkoutsdone((prev) => ({ ...prev, [index]: newvalue }));
+    const details = {
+      day: indiWorkout.day,
+      exercise: index,
+      isdone: newvalue,
+      name: exercise,
+      calories: calories
+    };
+    console.log(details)
     try {
       await axios.post(`${url}/workoutdone/${id}`, details);
     } catch (error) {
@@ -36,14 +38,13 @@ const Workoutforeachday = () => {
     if (!id) return;
 
     async function getworkoutsdone() {
-      const res = await axios.get(
-        `${url}/getchangedworkout/${id}`,
-        { params: { day: Number(today) } }
-      );
+      const res = await axios.get(`${url}/getchangedworkout/${id}`, {
+        params: { day: Number(today) },
+      });
 
       const obj = {};
       res.data.forEach((data) => {
-        obj[data.exercise] = data.isdone;
+        obj[data.exercise] = data.isdone === "true" ? true : false;
       });
 
       setworkoutsdone(obj);
@@ -51,8 +52,7 @@ const Workoutforeachday = () => {
 
     getworkoutsdone();
   }, [indiWorkout, today, id]);
-
-  console.log(indiWorkout);
+  console.log(workoutsdone);
 
   useEffect(() => {
     if (!id) return;
@@ -73,17 +73,14 @@ const Workoutforeachday = () => {
 
     fetchDayWorkout();
   }, [today, id]);
-console.log(indiWorkout)
+
   useEffect(() => {
     if (!indiWorkout || !indiWorkout.exercises) return;
 
-    const cleaned = indiWorkout.exercises.replace(/["{}]/g, "");
-    const items = cleaned.split("), ").filter((e) => e.trim() !== "");
-
-    const total = items.length;
+    const total = 6;
     const completed = Object.values(workoutsdone).filter(Boolean).length;
 
-    if (completed === total && total > 0) {
+    if (completed === total) {
       const duration = 3000;
       const animationEnd = Date.now() + duration;
 
@@ -103,12 +100,27 @@ console.log(indiWorkout)
   }, [workoutsdone]);
 
   if (loading || !indiWorkout) {
-    return (
-      <div className="h-screen flex items-center justify-center text-white text-2xl">
-        Loading your workout...
-      </div>
-    );
-  }
+  return (
+    <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white">
+      
+      {/* Spinner */}
+      <div className="w-14 h-14 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6" />
+
+      {/* Main text */}
+      <h1 className="text-2xl font-semibold tracking-wide">
+        Loading your workout
+      </h1>
+
+      {/* Sub text */}
+      <p className="mt-2 text-gray-400 text-sm text-center max-w-xs">
+        We’re personalizing exercises based on your goals and fitness level.
+      </p>
+
+    
+    </div>
+  );
+}
+
 
   const cleaned = indiWorkout.exercises.replace(/["{}]/g, "");
   const items = cleaned
@@ -116,7 +128,7 @@ console.log(indiWorkout)
     .map((e) => (e.trim().endsWith("),") ? e.trim() : e.trim() + ")"));
 
   const completed = Object.values(workoutsdone).filter(Boolean).length;
-console.log("tems :",items)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -156,7 +168,6 @@ console.log("tems :",items)
         </div>
       )}
 
-      
       {indiWorkout.focus !== "Rest" && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 px-5 mx-auto">
           {items.map((rows, index) => {
@@ -169,7 +180,9 @@ console.log("tems :",items)
 
             const reps = parts[0]?.replace("x", " x ");
             const desc = parts[1];
-            const calories = Math.floor(parts[2]?.replace("~", "").replace(" kcal", "")/4);
+            const calories = Math.floor(
+              parts[2]?.replace("~", "").replace(" kcal", "") / 4
+            );
             const target = parts[3]?.replace(", ", " , ");
 
             const isDone = workoutsdone[index];
@@ -196,7 +209,7 @@ console.log("tems :",items)
                   </h2>
 
                   <button
-                    onClick={() => toggleDone(index,exercise)}
+                    onClick={() => toggleDone(index, exercise, calories)}
                     className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition ${
                       isDone
                         ? "bg-green-600 border-green-500 text-white"
@@ -223,7 +236,7 @@ console.log("tems :",items)
                   <span className="font-semibold text-purple-400">
                     Target :
                   </span>{" "}
-                  {target}
+                  {target?.replace(")", "")}
                 </p>
 
                 <p className="mt-2 text-gray-300 text-sm leading-snug">

@@ -8,15 +8,13 @@ export const ContextProvider = ({ children }) => {
   const url = "https://fitnow1-1.onrender.com"
   const [id, setId] = useState(null);
   const [details, setDetails] = useState(null);
-  const [workoutgenerated, setworkoutgenerated] = useState();
+  const [workoutgenerated, setworkoutgenerated] = useState(false);
   const [dietgenerated, setdietgenerated] = useState(false);
   const [detailsfilled,setdetailsfilled] = useState(false)
   const [logged,setlogged] = useState(false)
-  const hasFetchedDetails = useRef(false);
-
+console.log("id:",id)
   useEffect(() => {
-    if (!token) return;
-
+    
     async function fetchId() {
       try {
         const res = await axios.get(`${url}/getid`, {
@@ -30,27 +28,25 @@ export const ContextProvider = ({ children }) => {
     }
 
     fetchId();
-  }, [token]);
-
+  }, []);
+ console.log("logged:",logged) 
   useEffect(() => {
-    if (!id || hasFetchedDetails.current) return;
+    if (!id) return;
 
     async function fetchDetails() {
       try {
         const res = await axios.get(`${url}/userdetails/${id}`);
         
         setDetails(res.data);
-        hasFetchedDetails.current = true;
+        setdetailsfilled(true)
       } catch (err) {
         console.log("Error fetching details:", err);
       }
     }
 
     fetchDetails();
-  }, [id]);
+  }, [id,logged]);
   
-  console.log(id)
-  console.log("details",details)
 
 
   useEffect(() => {
@@ -63,11 +59,10 @@ export const ContextProvider = ({ children }) => {
       console.log("started generating workout");
       const res = await axios.post(
         `${url}/workout-plan/${id}`,
-        details,
-        { headers: { "Content-Type": "application/json" } }
+        details
       );
 
-      if (res.data?.success) {
+      if (res.data) {
         setworkoutgenerated(true);
       }
     } catch (err) {
@@ -76,9 +71,7 @@ export const ContextProvider = ({ children }) => {
   };
 
   generateWorkout();
-}, [id, details]);
-
-
+}, [id, details,workoutgenerated,logged]);
 
   
   useEffect(() => {
@@ -101,9 +94,9 @@ export const ContextProvider = ({ children }) => {
   }
 
   generatedietplan();
-}, [id, details, dietgenerated]);
+}, [id, details, dietgenerated,logged]);
 
-
+console.log(workoutgenerated)
   return (
     <Context.Provider
       value={{
@@ -114,6 +107,8 @@ export const ContextProvider = ({ children }) => {
         workoutgenerated,
         dietgenerated,
         logged,
+        detailsfilled,
+        setdetailsfilled,
         setlogged,
         setdetailsfilled,
       }}

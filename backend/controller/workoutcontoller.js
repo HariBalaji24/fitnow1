@@ -40,7 +40,6 @@ const workoutrecommend = async (req, res) => {
       duration,
       goal,
     } = req.body;
-    console.log(req.body)
     const existing = await db.query("SELECT * FROM workouts WHERE user_id=$1", [
       user_id,
     ]);
@@ -52,9 +51,30 @@ const workoutrecommend = async (req, res) => {
       });
     } else {
       console.log("Generating new workout plan...");
+
+      // Fetch last 10 chat messages for context
+      let chatHistoryContext = "";
+      try {
+        const historyResult = await db.query(
+          "SELECT sender, message FROM aicoach WHERE user_id=$1 ORDER BY id DESC LIMIT 10",
+          [user_id]
+        );
+        // Reverse to get chronological order
+        const history = historyResult.rows.reverse();
+        if (history.length > 0) {
+          chatHistoryContext = "RECENT CHAT HISTORY WITH USER (Use this context to personalize the plan):\n" + 
+            history.map(msg => `${msg.sender.toUpperCase()}: ${msg.message}`).join("\n") + 
+            "\n\n";
+        }
+      } catch (historyError) {
+        console.error("Error fetching chat history:", historyError);
+        // Continue without history if error occurs
+      }
       
-  const prompt = `
+      const prompt = `
 You are a certified personal trainer.
+
+${chatHistoryContext}
 
 Create a structured 30-day workout plan for a ${age}-year-old ${gender}, ${height} cm, ${weight} kg, BMI ${bmi}.
 Training location: ${location}
@@ -126,8 +146,10 @@ let airesponse
         console.log(error);
         
       }
+      console.log("aireponse : ",airesponse)
     function parseTable(table) {
-  const lines = table.split("\n").slice(2); // skip headers
+      console.log(table)
+  const lines = table.split("\n").slice(2);
 
   const output = [];
 
@@ -316,8 +338,6 @@ if (result.length !== 7) {
   });
 }
 
-
-    console.log(result)
     for (const day of result) {
       await db.query(
         `INSERT INTO diet 
@@ -377,29 +397,25 @@ END;`,
 
 const workoutdone = async (req, res) => {
   const { user_id } = req.params;
-  const { day, exercise, isdone, name } = req.body;
-  console.log(req.body)
-  const alreadyadded = await db.query(
-    `select * from workoutdone where day=$1 and exercise=$2 and user_id=$3`,
-    [day, exercise, user_id]
-  );
-  if (alreadyadded.rows.length > 0) {
-    await db.query(
-      `UPDATE workoutdone 
-         SET isdone=$1 
-         WHERE user_id=$2 AND day=$3 AND exercise=$4`,
-      [isdone, user_id, day, exercise]
-    );
-    res.status(200).json({ success: "success" });
-  } else {
-    await db.query(
-      `INSERT INTO workoutdone (user_id, day, exercise, isdone,exercisename)
-     VALUES ($1, $2, $3, $4, $5) `,
-      [user_id, day, exercise, isdone,name]
-    );
+  const { day, exercise, isdone, name, calories } = req.body;
+  
+  await db.query(
+  `
+  INSERT INTO workoutdone
+    (user_id, day, exercise, isdone, exercisename, calories)
+  VALUES ($1, $2, $3, $4, $5, $6)
+  ON CONFLICT (user_id, day, exercise)
+  DO UPDATE SET
+    isdone = EXCLUDED.isdone,
+    calories = EXCLUDED.calories
+  `,
+  [user_id, day, exercise, isdone, name, calories]
+);
 
-    res.status(200).json({ success: "success" });
-  }
+res.status(200).json({
+  success: true,
+  calories,
+});
 };
 
 const getchangedworkout = async (req, res) => {
