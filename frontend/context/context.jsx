@@ -1,102 +1,99 @@
-import { createContext, useEffect, useState, useRef } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
 export const Context = createContext();
 
 export const ContextProvider = ({ children }) => {
   const token = localStorage.getItem("auth-token");
-  const url = "https://fitnow1-1.onrender.com"
+  const url = "https://fitnow1-1.onrender.com";
+
   const [id, setId] = useState(null);
   const [details, setDetails] = useState(null);
   const [workoutgenerated, setworkoutgenerated] = useState(false);
   const [dietgenerated, setdietgenerated] = useState(false);
-  const [detailsfilled,setdetailsfilled] = useState(false)
-  const [logged,setlogged] = useState(false)
-console.log("id:",id)
+  const [detailsfilled, setdetailsfilled] = useState(false);
+  const [logged, setlogged] = useState(false);
+
+  /* ---------------- FETCH USER ID ---------------- */
   useEffect(() => {
-    
+    if (!token) return;
+
     async function fetchId() {
       try {
         const res = await axios.get(`${url}/getid`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         setId(res.data.user_id);
+        setlogged(true);
       } catch (err) {
         console.log("Error fetching ID:", err);
       }
     }
 
     fetchId();
-  }, []);
- console.log("logged:",logged) 
+  }, [token]);
+
+  /* ---------------- FETCH USER DETAILS ---------------- */
   useEffect(() => {
     if (!id) return;
 
     async function fetchDetails() {
       try {
         const res = await axios.get(`${url}/userdetails/${id}`);
-        
         setDetails(res.data);
-        setdetailsfilled(true)
+        setdetailsfilled(true);
       } catch (err) {
         console.log("Error fetching details:", err);
       }
     }
 
     fetchDetails();
-  }, [id,logged]);
-  
+  }, [id]);
 
-
+  /* ---------------- GENERATE WORKOUT PLAN ---------------- */
   useEffect(() => {
-  if (!id) return;
-  if (!details) return;
-  if (workoutgenerated) return;
+    if (!id || !details || workoutgenerated) return;
 
-  const generateWorkout = async () => {
-    try {
-      console.log("started generating workout");
-      const res = await axios.post(
-        `${url}/workout-plan/${id}`,
-        details
-      );
+    async function generateWorkout() {
+      try {
+        const res = await axios.post(
+          `${url}/workout-plan/${id}`,
+          details
+        );
 
-      if (res.data) {
-        setworkoutgenerated(true);
+        if (res.data) {
+          setworkoutgenerated(true);
+        }
+      } catch (err) {
+        console.error("Error generating workout plan:", err);
       }
-    } catch (err) {
-      console.error("Error generating workout plan:", err);
     }
-  };
 
-  generateWorkout();
-}, [id, details,workoutgenerated,logged]);
+    generateWorkout();
+  }, [id, details, workoutgenerated]);
 
-  
+  /* ---------------- GENERATE DIET PLAN ---------------- */
   useEffect(() => {
-  if (!id || !details || dietgenerated) return;
+    if (!id || !details || dietgenerated) return;
 
-  async function generatedietplan() {
-    try {
-      console.log("started generating diet plan");
-      const res = await axios.post(
-        `${url}/diet-plan/${id}`,
-        details
-      );
+    async function generateDiet() {
+      try {
+        const res = await axios.post(
+          `${url}/diet-plan/${id}`,
+          details
+        );
 
-      if (res.data?.success) {
-        setdietgenerated(true);
+        if (res.data?.success) {
+          setdietgenerated(true);
+        }
+      } catch (err) {
+        console.error("Error generating diet plan:", err);
       }
-    } catch (err) {
-      console.error("Error generating diet plan:", err);
     }
-  }
 
-  generatedietplan();
-}, [id, details, dietgenerated,logged]);
+    generateDiet();
+  }, [id, details, dietgenerated]);
 
-console.log(workoutgenerated)
   return (
     <Context.Provider
       value={{
@@ -104,11 +101,10 @@ console.log(workoutgenerated)
         token,
         id,
         setId,
+        logged,
         workoutgenerated,
         dietgenerated,
-        logged,
         detailsfilled,
-        setdetailsfilled,
         setlogged,
         setdetailsfilled,
       }}
@@ -117,4 +113,3 @@ console.log(workoutgenerated)
     </Context.Provider>
   );
 };
-

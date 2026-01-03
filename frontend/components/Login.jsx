@@ -16,7 +16,7 @@ const Login = () => {
   const responsegoogle = async (authResult) => {
     try {
       if (authResult.code) {
-        const response = await axios.post(`http://localhost:3000/google`, {
+        const response = await axios.post(`${url}/google`, {
           code: authResult.code,
         });
 
@@ -60,10 +60,9 @@ const Login = () => {
     };
 
     try {
-      const response = await axios.post(link, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await axios.post(link, payload);
       const data = response.data;
+      
       setId(data.userid);
       if (data.success && data.token) {
         setlogged(true)
