@@ -27,7 +27,7 @@ const Workoutforeachday = () => {
     };
     console.log(details)
     try {
-      const res=await axios.post(`http://localhost:3000/workoutdone/${id}`, details);
+      const res=await axios.post(`${url}/workoutdone/${id}`, details);
       console.log(res.data)
     } catch (error) {
       console.log(error.message);
