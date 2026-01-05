@@ -240,7 +240,7 @@ const PillNav = ({
   };
 
   return (
-    <div className="fixed xl:w-[70%] lg:w-[80%] md:w-[90%] sm:w-[95%] top-6 left-1/2 -translate-x-1/2 z-[1000]">
+    <div className="fixed xl:w-[70%] lg:w-[80%] md:w-[90%] w-[95%] top-6 left-1/2 -translate-x-1/2 z-[1000]">
       <nav
         className={`flex w-full mx-auto items-center justify-between md:justify-center gap-2 px-2 py-3 rounded-full
   

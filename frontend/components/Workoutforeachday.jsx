@@ -9,13 +9,13 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 const Workoutforeachday = () => {
   const location = useLocation();
   const today = location.pathname.split("/workouts/")[1];
-  const { id, url } = useContext(Context);
+  const { id, url,token } = useContext(Context);
 
   const [indiWorkout, setIndiWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [workoutsdone, setworkoutsdone] = useState({});
 
-  const toggleDone = async (index, exercise, calories) => {
+  const toggleDone = async (index, exercise) => {
     const newvalue = !workoutsdone[index];
 
     setworkoutsdone((prev) => ({ ...prev, [index]: newvalue }));
@@ -23,14 +23,14 @@ const Workoutforeachday = () => {
       day: indiWorkout.day,
       exercise: index,
       isdone: newvalue,
-      name: exercise,
-      calories: calories
+      name: exercise
     };
     console.log(details)
     try {
-      await axios.post(`${url}/workoutdone/${id}`, details);
+      const res=await axios.post(`http://localhost:3000/workoutdone/${id}`, details);
+      console.log(res.data)
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
     }
   };
 
@@ -44,7 +44,7 @@ const Workoutforeachday = () => {
 
       const obj = {};
       res.data.forEach((data) => {
-        obj[data.exercise] = data.isdone === "true" ? true : false;
+        obj[data.exercise] = data.isdone 
       });
 
       setworkoutsdone(obj);
@@ -52,7 +52,19 @@ const Workoutforeachday = () => {
 
     getworkoutsdone();
   }, [indiWorkout, today, id]);
-  console.log(workoutsdone);
+
+  useEffect(()=>{
+    async function fetchsample() {
+      try {
+      const response= await axios.post(`http://localhost:3000/testing`,{user_id:id})
+      console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      }
+      
+    } 
+     fetchsample()
+  },[id])
 
   useEffect(() => {
     if (!id) return;
@@ -67,7 +79,7 @@ const Workoutforeachday = () => {
         setIndiWorkout(filtered);
         setLoading(false);
       } catch (err) {
-        console.error(err);
+        console.log(err);
       }
     }
 
@@ -209,7 +221,7 @@ const Workoutforeachday = () => {
                   </h2>
 
                   <button
-                    onClick={() => toggleDone(index, exercise, calories)}
+                    onClick={() => toggleDone(index, exercise)}
                     className={`px-3 py-1 rounded-md text-xs font-semibold cursor-pointer transition ${
                       isDone
                         ? "bg-green-600 border-green-500 text-white"

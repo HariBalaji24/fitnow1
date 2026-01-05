@@ -89,7 +89,7 @@ const Login = () => {
         });
       }
     } catch (error) {
-      toast.error("Something went wrong. Try again", {
+      toast.error(error.message, {
         position: "top-center",
         duration: 1000,
         style: { fontSize: "16px" },

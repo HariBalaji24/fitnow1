@@ -33,7 +33,7 @@ console.log(totalworkouts)
         });
         console.log(date);
         const response = await axios.get(
-          `${url}/workoutsdoneonday/${id}`,
+          `http://localhost:3000/workoutsdoneonday/${id}`,
           {
             params: { date },
           }
@@ -96,8 +96,6 @@ const StatCard = ({ title, value, icon }) => {
       </div>
     );
   }
-
-  
 
   // ---- NO DATA ----
   if (chartdata.length === 0) {

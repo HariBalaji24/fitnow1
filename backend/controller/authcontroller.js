@@ -9,7 +9,6 @@ const secretkey = process.env.SECRETKEY;
 export const signin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-if (!code) return res.status(400).json({ message: "No code provided" });
     const exists = await db.query(
       "SELECT * FROM userdetails WHERE email=$1",
       [email]

@@ -13,9 +13,7 @@ console.log(id)
   useEffect(() => {
     async function fetchWorkouts() {
       if (!id) return;
-
       setLoading(true); 
-
       try {
         const response = await axios.get(
           `${url}/getworkouts/${id}`

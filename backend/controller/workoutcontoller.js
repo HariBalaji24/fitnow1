@@ -26,7 +26,7 @@ const userdetails = async (req, res) => {
 };
 
 const workoutrecommend = async (req, res) => {
-  const {user_id} = req.params
+  const { user_id } = req.params;
   try {
     const {
       age,
@@ -52,29 +52,9 @@ const workoutrecommend = async (req, res) => {
     } else {
       console.log("Generating new workout plan...");
 
-      // Fetch last 10 chat messages for context
-      let chatHistoryContext = "";
-      try {
-        const historyResult = await db.query(
-          "SELECT sender, message FROM aicoach WHERE user_id=$1 ORDER BY id DESC LIMIT 10",
-          [user_id]
-        );
-        // Reverse to get chronological order
-        const history = historyResult.rows.reverse();
-        if (history.length > 0) {
-          chatHistoryContext = "RECENT CHAT HISTORY WITH USER (Use this context to personalize the plan):\n" + 
-            history.map(msg => `${msg.sender.toUpperCase()}: ${msg.message}`).join("\n") + 
-            "\n\n";
-        }
-      } catch (historyError) {
-        console.error("Error fetching chat history:", historyError);
-        // Continue without history if error occurs
-      }
-      
       const prompt = `
 You are a certified personal trainer.
 
-${chatHistoryContext}
 
 Create a structured 30-day workout plan for a ${age}-year-old ${gender}, ${height} cm, ${weight} kg, BMI ${bmi}.
 Training location: ${location}
@@ -127,12 +107,11 @@ No unwanted text should appear outside the table.
 * Do not include roles, reasoning, or chain-of-thought.
 
 `;
-let airesponse
+      let airesponse;
       try {
-        
         const completion = await openai.chat.completions.create({
           model: "mistralai/devstral-2512:free",
-          max_tokens : 6000,
+          max_tokens: 6000,
           messages: [
             {
               role: "user",
@@ -141,42 +120,35 @@ let airesponse
           ],
         });
         airesponse = completion.choices[0].message.content;
-        
       } catch (error) {
         console.log(error);
-        
       }
-      console.log("aireponse : ",airesponse)
-    function parseTable(table) {
-      console.log(table)
-  const lines = table.split("\n").slice(2);
+      console.log("aireponse : ", airesponse);
+      function parseTable(table) {
+        console.log(table);
+        const lines = table.split("\n").slice(2);
 
-  const output = [];
+        const output = [];
 
-  for (const line of lines) {
-    if (!line.trim().startsWith("|")) continue;
+        for (const line of lines) {
+          if (!line.trim().startsWith("|")) continue;
 
-    const cols = line
-      .split("|")
-      .map(c => c.trim())
-      .filter(c => c.length > 0);
+          const cols = line
+            .split("|")
+            .map((c) => c.trim())
+            .filter((c) => c.length > 0);
 
-    
+          const day = Number(cols[0]);
+          const focus = cols[1];
+          const exercises = cols[2];
 
-    const day = Number(cols[0]);
-    const focus = cols[1];
-    const exercises = cols[2];
+          output.push({ day, focus, exercises });
+        }
 
-    
+        return output;
+      }
 
-    output.push({ day, focus, exercises });
-  }
-
-  return output;
-}
-
-
-const result = parseTable(airesponse);
+      const result = parseTable(airesponse);
       for (let day of result) {
         await db.query(
           "INSERT INTO workouts (user_id, day, focus, exercises) VALUES ($1,$2,$3,$4)",
@@ -210,7 +182,6 @@ const getallworkouts = async (req, res) => {
   } catch (error) {}
 };
 
-
 const dietrecommend = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -238,10 +209,9 @@ const dietrecommend = async (req, res) => {
     }
 
     // ✅ CHECK IF DIET ALREADY EXISTS
-    const already = await db.query(
-      "SELECT 1 FROM diet WHERE user_id=$1",
-      [user_id]
-    );
+    const already = await db.query("SELECT 1 FROM diet WHERE user_id=$1", [
+      user_id,
+    ]);
 
     if (already.rows.length > 0) {
       return res.json({
@@ -298,45 +268,48 @@ STRICT OUTPUT FORMAT:
     }
 
     const rows = airesponse
-  .split("\n")
-  .filter(line => line.trim().startsWith("|") && !line.includes("---"));
+      .split("\n")
+      .filter((line) => line.trim().startsWith("|") && !line.includes("---"));
 
-const result = [];
+    const result = [];
 
-for (const row of rows) {
-  const cols = row.split("|").map(c => c.trim()).filter(Boolean);
-  if (cols.length !== 3) continue;
+    for (const row of rows) {
+      const cols = row
+        .split("|")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      if (cols.length !== 3) continue;
 
-  const day = cols[0];
-  const mealsText = cols[1];
-  const totalcalories = cols[2].replace("cal", "").trim();
+      const day = cols[0];
+      const mealsText = cols[1];
+      const totalcalories = cols[2].replace("cal", "").trim();
 
-  // Regex extraction
-  const mealMatches = mealsText.match(
-    /Breakfast\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Lunch\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Dinner\s*\((.*?)\)/i
-  );
+      // Regex extraction
+      const mealMatches = mealsText.match(
+        /Breakfast\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Lunch\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Dinner\s*\((.*?)\)/i
+      );
 
-  if (!mealMatches) continue;
+      if (!mealMatches) continue;
 
-  const [, breakfast, snack1, lunch, snack2, dinner] = mealMatches;
+      const [, breakfast, snack1, lunch, snack2, dinner] = mealMatches;
 
-  result.push({
-    day,
-    breakfast,
-    snack1,
-    lunch,
-    snack2,
-    dinner,
-    totalcalories,
-  });
-}
+      result.push({
+        day,
+        breakfast,
+        snack1,
+        lunch,
+        snack2,
+        dinner,
+        totalcalories,
+      });
+    }
 
-if (result.length !== 7) {
-  return res.status(500).json({
-    success: false,
-    message: "Invalid diet format generated",
-  });
-}
+    if (result.length !== 7) {
+      return res.status(500).json({
+        success: false,
+        message: "Invalid diet format generated",
+      });
+    }
 
     for (const day of result) {
       await db.query(
@@ -363,7 +336,6 @@ if (result.length !== 7) {
       message: "Diet plan added successfully",
       plan: airesponse,
     });
-
   } catch (error) {
     console.error("Diet controller error:", error);
     return res.status(500).json({
@@ -375,6 +347,7 @@ if (result.length !== 7) {
 
 const getdiet = async (req, res) => {
   try {
+    console.log("diet plan api called")
     const { user_id } = req.params;
     const result = await db.query(
       `SELECT *
@@ -392,31 +365,44 @@ END;`,
       [user_id]
     );
     return res.json(result.rows);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 const workoutdone = async (req, res) => {
   const { user_id } = req.params;
-  const { day, exercise, isdone, name, calories } = req.body;
-  
-  await db.query(
-  `
-  INSERT INTO workoutdone
-    (user_id, day, exercise, isdone, exercisename, calories)
-  VALUES ($1, $2, $3, $4, $5, $6)
-  ON CONFLICT (user_id, day, exercise)
-  DO UPDATE SET
-    isdone = EXCLUDED.isdone,
-    calories = EXCLUDED.calories
-  `,
-  [user_id, day, exercise, isdone, name, calories]
-);
+  let { day, exercise, isdone, name } = req.body;
+  console.log(req.body)
+  try {
+    const alreadyadded = await db.query(
+    `select * from workoutdone where day=$1 and exercise=$2 and user_id=$3`,
+    [day, exercise, user_id]
+  );
+  if (alreadyadded.rows.length > 0) {
+    await db.query(
+      `UPDATE workoutdone 
+         SET isdone=$1 
+         WHERE user_id=$2 AND day=$3 AND exercise=$4`,
+      [isdone, user_id, day, exercise]
+    );
+    res.status(200).json({ success: "success" });
+  } else {
+    await db.query(
+      `INSERT INTO workoutdone (user_id, day, exercise, isdone,exercisename)
+     VALUES ($1, $2, $3, $4, $5) `,
+      [user_id, day, exercise, isdone,name]
+    );
 
-res.status(200).json({
-  success: true,
-  calories,
-});
+    res.status(200).json({ success: "success" });
+  }
+  } catch (error) {
+    console.error("Workoutdone ERROR:", error.message);
+    res.status(500).json({ error: error.message })
+  }
+  
 };
+
 
 const getchangedworkout = async (req, res) => {
   const { user_id } = req.params;
@@ -432,6 +418,10 @@ const getchangedworkout = async (req, res) => {
   }
 };
 
+const sample= async (req,res)=> {
+  const {user_id} = req.body
+  res.json({userid:user_id})
+}
 
 export default {
   workoutrecommend,
@@ -441,4 +431,5 @@ export default {
   getdiet,
   workoutdone,
   getchangedworkout,
+  sample
 };
