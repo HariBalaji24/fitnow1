@@ -33,7 +33,7 @@ console.log(totalworkouts)
         });
         console.log(date);
         const response = await axios.get(
-          `http://localhost:3000/workoutsdoneonday/${id}`,
+          `${url}/workoutsdoneonday/${id}`,
           {
             params: { date },
           }
