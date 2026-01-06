@@ -23,7 +23,7 @@ const Progress = () => {
      totalworkouts+=item.workouts
   }
   
-console.log(totalworkouts)
+
   useEffect(() => {
     async function fetchworkout() {
       if (!id) return null;
@@ -33,7 +33,7 @@ console.log(totalworkouts)
         });
         console.log(date);
         const response = await axios.get(
-          `${url}/workoutsdoneonday/${id}`,
+          `${url}/${id}`,
           {
             params: { date },
           }
@@ -45,7 +45,7 @@ console.log(totalworkouts)
     }
     fetchworkout();
   }, [id]);
-
+console.log(workouts)
   useEffect(() => {
   if (!workouts) return;
 
