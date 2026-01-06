@@ -292,7 +292,6 @@ const PillNav = ({
               src={logo}
               alt={logoAlt}
               ref={logoImgRef}
-              className="w-full h-full object-cover block"
             />
           </a>
         )}

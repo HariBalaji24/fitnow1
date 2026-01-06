@@ -17,7 +17,7 @@ const Navbar = () => {
 
   return (
     <PillNav
-      logo={logoimage}
+      logo="https://thumbs.dreamstime.com/b/weight-lifting-gym-dumbbell-weights-fist-hand-cartoon-holding-illustration-347315939.jpg"
       items={[
         { label: "Profile", href: "/profile" },
         { label: "Workouts", href: "/workouts" },

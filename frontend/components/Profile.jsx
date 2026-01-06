@@ -111,9 +111,18 @@ const Profile = () => {
   /* ---------------- LOADING ---------------- */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading profile...
-      </div>
+      <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white">
+      
+      <div className="w-14 h-14 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6" />
+      <h1 className="text-2xl font-semibold tracking-wide">
+        Loading your workout
+      </h1>
+      <p className="mt-2 text-gray-400 text-sm text-center max-w-xs">
+        We’re personalizing exercises based on your goals and fitness level.
+      </p>
+
+    
+    </div>
     );
   }
 
@@ -154,7 +163,7 @@ const Profile = () => {
         <h2 className="text-3xl font-extrabold text-purple-400">
           {form.firstname} {form.secondname}
         </h2>
-        <p className="text-white/60 text-sm mt-3">
+        <p className="text-white/60 text-sm mt-1">
           Your fitness journey at a glance 💫
         </p>
       </div>
