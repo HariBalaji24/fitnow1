@@ -141,173 +141,119 @@ const Profile = () => {
   /* ---------------- PROFILE PAGE ---------------- */
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen px-6 py-24 text-white"
-    >
-      <div className="max-w-5xl mt-5 mx-auto bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl p-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h2 className="text-3xl font-semibold">
-              {form.firstname} {form.secondname}
-            </h2>
-            <p className="text-white/60 text-sm">Your Fitness Profile</p>
-          </div>
+  initial={{ opacity: 0, y: -10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+  className="min-h-screen px-6 py-24 text-white"
+>
+  <div className="max-w-5xl mx-auto bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl p-8">
 
-          {!editMode ? (
-            <button
-              onClick={() => setEditMode(true)}
-              className="px-5 py-2 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-xl shadow hover:scale-105 transition"
-            >
-              Edit Profile
-            </button>
-          ) : (
-            <div className="flex gap-3">
-              <button
-                onClick={() => setEditMode(false)}
-                className="px-4 py-2 bg-gray-600 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveChanges}
-                className="px-4 py-2 bg-green-600 rounded-lg"
-              >
-                Save
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            ["First Name", "firstname"],
-            ["Last Name", "secondname"],
-            ["Age", "age"],
-            ["Height (cm)", "height"],
-            ["Weight (kg)", "weight"],
-          ].map(([label, name]) => (
-            <div key={name}>
-              <label className="text-sm text-purple-300">{label}</label>
-              <input
-                disabled={!editMode}
-                value={form[name] || ""}
-                onChange={(e) => handleChange(name, e.target.value)}
-                className="w-full px-3 py-2 mt-1 rounded-lg bg-[#1a1230] border border-purple-600/40 text-white"
-              />
-            </div>
-          ))}
-          {[
-            {
-              label: "Gender",
-              name: "gender",
-              options: ["Male", "Female", "Other"],
-            },
-            {
-              label: "Workout Location",
-              name: "location",
-              options: ["Home", "Gym", "Outdoor", "Both"],
-            },
-            {
-              label: "Frequency /week",
-              name: "frequency",
-              options: ["1", "2", "3", "4", "5", "6", "7"],
-            },
-            {
-              label: "Duration (min)",
-              name: "duration",
-              options: ["15", "20", "30", "45", "60", "90"],
-            },
-            {
-              label: "Goal",
-              name: "goal",
-              options: [
-                "Fat Loss",
-                "Muscle Gain",
-                "Maintain Weight",
-                "Endurance",
-                "Strength",
-              ],
-            },
-            {
-              label: "Condition",
-              name: "condition",
-              options: [
-                "None",
-                "Heart Disease",
-                "Diabetes",
-                "PCOS",
-                "Asthma",
-                "Hypertension",
-                "Thyroid",
-              ],
-            },
-            {
-              label: "Diet Type",
-              name: "diet",
-              options: [
-                "Vegetarian",
-                "Non-Vegetarian",
-                "Vegan",
-                "Eggetarian",
-                "Mixed",
-              ],
-            },
-            {
-              label: "Meal Preference",
-              name: "meal",
-              options: [
-                "South Indian",
-                "North Indian",
-                "East Indian",
-                "West Indian",
-                "Indian Mixed",
-                "Continental",
-                "Mediterranean",
-                "Asian",
-                "Middle Eastern",
-              ],
-            },
-            {
-              label: "Allergy",
-              name: "allergy",
-              options: [
-                "None",
-                "Lactose Intolerant",
-                "Gluten-Free",
-                "Nut Allergy",
-                "Peanut Allergy",
-                "Soy Allergy",
-                "Seafood Allergy",
-              ],
-            },
-          ].map((f) => (
-            <div key={f.name}>
-              <label className="text-sm text-purple-300 font-medium block mb-1">
-                {f.label}
-              </label>
-              <select
-                disabled={!editMode}
-                value={form[f.name] ?? ""}
-                onChange={(e) => handleChange(f.name, e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg bg-[#1a1230] border ${
-                  editMode ? "border-purple-600" : "border-transparent"
-                } text-white outline-none`}
-              >
-                <option value="">{editMode ? "Select" : "—"}</option>
-                {f.options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
-        
+    {/* HEADER */}
+    <div className="flex justify-between items-center mb-8">
+      <div>
+        <h2 className="text-3xl font-extrabold text-purple-400">
+          {form.firstname} {form.secondname}
+        </h2>
+        <p className="text-white/60 text-sm mt-3">
+          Your fitness journey at a glance 💫
+        </p>
       </div>
-    </motion.div>
+
+      {!editMode ? (
+        <button
+          onClick={() => setEditMode(true)}
+          className="px-5 py-2 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-xl shadow hover:scale-105 transition"
+        >
+          ✏️ Edit Profile
+        </button>
+      ) : (
+        <div className="flex gap-3">
+          <button
+            onClick={() => setEditMode(false)}
+            className="px-4 py-2 bg-gray-600 rounded-lg"
+          >
+            ❌ Cancel
+          </button>
+          <button
+            onClick={saveChanges}
+            className="px-4 py-2 bg-green-600 rounded-lg"
+          >
+            💾 Save
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* BASIC INFO */}
+    
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      {[
+        ["🪪 First Name", "firstname"],
+        ["🪪 Last Name", "secondname"],
+        ["🎂 Age", "age"],
+        ["📏 Height (cm)", "height"],
+        ["⚖️ Weight (kg)", "weight"],
+        ["⏱️ Duration (min)", "duration"],
+        ["📅 Frequency / week", "frequency"],
+        ["📊 BMI", "bmi"],
+      ].map(([label, name]) => (
+        <div key={name}>
+          <label className="text-sm text-purple-300">{label}</label>
+          <input
+            disabled={!editMode}
+            value={form[name] || ""}
+            onChange={(e) => handleChange(name, e.target.value)}
+            className="w-full px-3 py-2 mt-1 rounded-lg bg-[#1a1230] border border-purple-600/40 text-white"
+          />
+        </div>
+      ))}
+    </div>
+
+    
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[
+        { label: "🚻 Gender", name: "gender", options: ["Male", "Female", "Other"] },
+        { label: "🏋️ Workout Location", name: "location", options: ["Home", "Gym", "Outdoor", "Both"] },
+        { label: "🎯 Goal", name: "goal", options: ["Fat Loss", "Muscle Gain", "Maintain Weight", "Endurance", "Strength"] },
+        { label: "⚠️ Medical Condition", name: "condition", options: ["None", "Heart Disease", "Diabetes", "PCOS", "Asthma", "Hypertension", "Thyroid"] },
+        { label: "🥗 Diet Type", name: "diet", options: ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian", "Mixed"] },
+        { label: "🍽️ Meal Preference", name: "meal", options: ["South Indian", "North Indian", "East Indian", "West Indian", "Indian Mixed", "Continental"] },
+        { label: "🚫 Allergy", name: "allergy", options: ["None", "Lactose Intolerant", "Gluten-Free", "Nut Allergy", "Seafood Allergy"] },
+      ].map((f) => (
+        <div key={f.name}>
+          <label className="text-sm text-purple-300 font-medium block mb-1">
+            {f.label}
+          </label>
+          <select
+            disabled={!editMode}
+            value={form[f.name] ?? ""}
+            onChange={(e) => handleChange(f.name, e.target.value)}
+            className={`w-full px-3 py-2 rounded-lg bg-[#1a1230] border ${
+              editMode ? "border-purple-600" : "border-transparent"
+            } text-white`}
+          >
+            <option value="">{editMode ? "Select" : "—"}</option>
+            {f.options.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+      ))}
+    </div>
+
+    {/* MOTIVATION */}
+    <div className="mt-10 text-center text-xl text-gray-300">
+      🚀 Stay consistent. Your future self will thank you!
+    </div>
+
+  </div>
+</motion.div>
+
+
   );
 };
 

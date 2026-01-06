@@ -253,7 +253,7 @@ const Details = () => {
                 <option>Both</option>
               </select>
 
-              <input type="number" placeholder="Workout Frequency" value={data.frequency}
+              <input type="number" placeholder="Workout Frequency per week" value={data.frequency}
                 onChange={(e) => handleChange("frequency", e.target.value)} className="input"
               />
 
