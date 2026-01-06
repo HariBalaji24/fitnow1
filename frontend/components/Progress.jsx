@@ -135,7 +135,7 @@ const StatCard = ({ title, value, icon }) => {
       <div className="flex justify-between text-sm mb-2">
         <span className="font-semibold text-purple-300">Goal Progress</span>
         <span className="text-gray-200">
-          {totalworkouts} / 180
+          {totalworkouts} / 156
         </span>
       </div>
 
