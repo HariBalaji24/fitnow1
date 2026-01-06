@@ -3,7 +3,7 @@ import { db } from "../database/database.js";
 const workoutsdoneonday = async (req, res) => {
   const { user_id } = req.params;
   const { date } = req.query; // expected format: YYYY-MM-DD
-  
+  console.log("added ")
   try {
     // 1️⃣ Get workout creation date (IST)
     const response = await db.query(

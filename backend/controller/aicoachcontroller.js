@@ -7,6 +7,7 @@ const openai = new OpenAi({
 });
 const aicoach = async (req, res) => {
   const { input,id } = req.body;
+  console.log("started ")
   try {
     console.log("started generating resposne");
   const prompt = `You are AI COACH MASTER, the official advanced AI assistant of FITNOW.

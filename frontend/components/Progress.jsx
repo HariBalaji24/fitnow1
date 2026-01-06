@@ -33,7 +33,7 @@ const Progress = () => {
         });
         console.log(date);
         const response = await axios.get(
-          `${url}/${id}`,
+          `${url}/workoutsdoneonday/${id}`,
           {
             params: { date },
           }

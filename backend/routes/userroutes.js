@@ -29,5 +29,5 @@ router.route("/getresponse/:user_id").get(aicoachcontroller.getresponse)
 
 router.route("/workoutsdoneonday/:user_id").get(progresscontroller.workoutsdoneonday)
 
-router.route("/testing").post(workoutcontoller.sample)
+
 export default router
