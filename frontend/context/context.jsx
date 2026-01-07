@@ -83,7 +83,7 @@ export const ContextProvider = ({ children }) => {
         console.log("diet started")
         console.log(details)
         const res = await axios.post(
-          `http://localhost:3000/diet-plan/${id}`,
+          `${url}/diet-plan/${id}`,
           details
         );
 
@@ -117,3 +117,4 @@ export const ContextProvider = ({ children }) => {
     </Context.Provider>
   );
 };
+
