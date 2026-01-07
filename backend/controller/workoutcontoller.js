@@ -200,27 +200,18 @@ const dietrecommend = async (req, res) => {
       allergy,
     } = req.body;
 
-    // ✅ BASIC VALIDATION
-    if (!age || !gender || !height || !weight || !goal) {
-      return res.status(400).json({
-        success: false,
-        message: "Incomplete diet details",
-      });
-    }
+    console.log(req.body);
 
-    // ✅ CHECK IF DIET ALREADY EXISTS
     const already = await db.query("SELECT 1 FROM diet WHERE user_id=$1", [
       user_id,
     ]);
-
+    console.log("diet started");
     if (already.rows.length > 0) {
       return res.json({
         success: false,
         message: "Diet already exists",
       });
     }
-
-    console.log("diet started");
 
     // ✅ PROMPT
     const prompt = `You are a certified nutritionist.
@@ -245,12 +236,16 @@ STRICT OUTPUT FORMAT:
     let airesponse;
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        max_tokens: 2000,
-        messages: [{ role: "user", content: prompt }],
+        model: "mistralai/devstral-2512:free",
+        max_tokens: 1900,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
       });
-
-      airesponse = completion.choices?.[0]?.message?.content;
+      airesponse = completion.choices[0].message.content;
     } catch (err) {
       console.error(" error:", err);
       return res.status(500).json({
@@ -259,58 +254,52 @@ STRICT OUTPUT FORMAT:
       });
     }
 
-    // ✅ VALIDATE AI RESPONSE
-    if (!airesponse || typeof airesponse !== "string") {
-      return res.status(500).json({
-        success: false,
-        message: "Empty AI response",
-      });
-    }
+    const cleanedResponse = airesponse
+  .replace(/```/g, "")
+  .replace(/\*\*/g, "") // remove bold markdown
+  .trim();
 
-    const rows = airesponse
-      .split("\n")
-      .filter((line) => line.trim().startsWith("|") && !line.includes("---"));
+const rows = cleanedResponse
+  .split("\n")
+  .filter(line => line.trim().startsWith("|") && !line.includes("---"));
 
-    const result = [];
+const result = [];
 
-    for (const row of rows) {
-      const cols = row
-        .split("|")
-        .map((c) => c.trim())
-        .filter(Boolean);
-      if (cols.length !== 3) continue;
+for (const row of rows) {
+  const cols = row.split("|").map(c => c.trim()).filter(Boolean);
+  if (cols.length !== 3) continue;
 
-      const day = cols[0];
-      const mealsText = cols[1];
-      const totalcalories = cols[2].replace("cal", "").trim();
+  const day = cols[0];
 
-      // Regex extraction
-      const mealMatches = mealsText.match(
-        /Breakfast\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Lunch\s*\((.*?)\),\s*Snack\s*\((.*?)\),\s*Dinner\s*\((.*?)\)/i
-      );
+  const mealsText = cols[1];
+  const totalcalories = parseInt(cols[2].replace(/\D/g, ""), 10);
+  if (isNaN(totalcalories)) continue;
 
-      if (!mealMatches) continue;
+  const getMeal = (label) => {
+    const match = mealsText.match(
+      new RegExp(`${label}:\\s*([^*]+?)(?=\\s*(Breakfast|Snack|Lunch|Dinner|$))`, "i")
+    );
+    return match ? match[1].trim() : null;
+  };
 
-      const [, breakfast, snack1, lunch, snack2, dinner] = mealMatches;
+  const breakfast = getMeal("Breakfast");
+  const snack1   = getMeal("Snack");
+  const lunch    = getMeal("Lunch");
+  const snack2   = mealsText.match(/Snack:/gi)?.length > 1 ? getMeal("Snack") : null;
+  const dinner   = getMeal("Dinner");
 
-      result.push({
-        day,
-        breakfast,
-        snack1,
-        lunch,
-        snack2,
-        dinner,
-        totalcalories,
-      });
-    }
+  if (!breakfast || !lunch || !dinner) continue;
 
-    if (result.length !== 7) {
-      return res.status(500).json({
-        success: false,
-        message: "Invalid diet format generated",
-      });
-    }
-
+  result.push({
+    day,
+    breakfast,
+    snack1,
+    lunch,
+    snack2,
+    dinner,
+    totalcalories
+  });
+}
     for (const day of result) {
       await db.query(
         `INSERT INTO diet 
@@ -347,7 +336,7 @@ STRICT OUTPUT FORMAT:
 
 const getdiet = async (req, res) => {
   try {
-    console.log("diet plan api called")
+    console.log("diet plan api called");
     const { user_id } = req.params;
     const result = await db.query(
       `SELECT *
@@ -366,43 +355,41 @@ END;`,
     );
     return res.json(result.rows);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };
 
 const workoutdone = async (req, res) => {
   const { user_id } = req.params;
   let { day, exercise, isdone, name } = req.body;
-  console.log(req.body)
+  console.log(req.body);
   try {
     const alreadyadded = await db.query(
-    `select * from workoutdone where day=$1 and exercise=$2 and user_id=$3`,
-    [day, exercise, user_id]
-  );
-  if (alreadyadded.rows.length > 0) {
-    await db.query(
-      `UPDATE workoutdone 
+      `select * from workoutdone where day=$1 and exercise=$2 and user_id=$3`,
+      [day, exercise, user_id]
+    );
+    if (alreadyadded.rows.length > 0) {
+      await db.query(
+        `UPDATE workoutdone 
          SET isdone=$1 
          WHERE user_id=$2 AND day=$3 AND exercise=$4`,
-      [isdone, user_id, day, exercise]
-    );
-    res.status(200).json({ success: "success" });
-  } else {
-    await db.query(
-      `INSERT INTO workoutdone (user_id, day, exercise, isdone,exercisename)
+        [isdone, user_id, day, exercise]
+      );
+      res.status(200).json({ success: "success" });
+    } else {
+      await db.query(
+        `INSERT INTO workoutdone (user_id, day, exercise, isdone,exercisename)
      VALUES ($1, $2, $3, $4, $5) `,
-      [user_id, day, exercise, isdone,name]
-    );
+        [user_id, day, exercise, isdone, name]
+      );
 
-    res.status(200).json({ success: "success" });
-  }
+      res.status(200).json({ success: "success" });
+    }
   } catch (error) {
     console.error("Workoutdone ERROR:", error.message);
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ error: error.message });
   }
-  
 };
-
 
 const getchangedworkout = async (req, res) => {
   const { user_id } = req.params;
@@ -418,11 +405,6 @@ const getchangedworkout = async (req, res) => {
   }
 };
 
-const sample= async (req,res)=> {
-  const {user_id} = req.body
-  res.json({userid:user_id})
-}
-
 export default {
   workoutrecommend,
   userdetails,
@@ -431,5 +413,4 @@ export default {
   getdiet,
   workoutdone,
   getchangedworkout,
-  sample
 };

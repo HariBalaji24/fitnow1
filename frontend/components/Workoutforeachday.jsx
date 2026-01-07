@@ -115,15 +115,10 @@ const Workoutforeachday = () => {
   return (
     <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black text-white">
       
-      {/* Spinner */}
       <div className="w-14 h-14 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6" />
-
-      {/* Main text */}
       <h1 className="text-2xl font-semibold tracking-wide">
         Loading your workout
       </h1>
-
-      {/* Sub text */}
       <p className="mt-2 text-gray-400 text-sm text-center max-w-xs">
         We’re personalizing exercises based on your goals and fitness level.
       </p>

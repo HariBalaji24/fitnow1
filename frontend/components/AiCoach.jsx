@@ -28,7 +28,15 @@ const AiCoach = () => {
       
       try {
         const formatted = response.data.map((msg) => {
-          const cleaned = msg.sender === 'ai' ?  msg.message.replace(/["{},]/g, "") : msg.message;
+          const cleaned =
+  msg.sender === "ai"
+    ? msg.message
+        .replace(/[{}"]/g, "")          // remove JSON artifacts
+        .replace(/\s*---\s*/g, "\n\n")  // section dividers
+        .replace(/🔹|❌|✅|🔥|💡|📅|💪|🏋️|🦍/g, "\n$&") // emoji new lines
+        .replace(/\n{2,}/g, "\n\n")     // normalize spacing
+    : msg.message;
+
           return {
             [msg.sender]: cleaned
           }
@@ -87,7 +95,7 @@ console.log(userInput)
 
                 {msg.ai && (
                   <div className="flex justify-start">
-                    <div className="bg-violet-800 px-4 py-2 rounded-xl  max-w-[70%] text-sm">
+                    <div className="bg-violet-800 px-4 py-2 rounded-xl whitespace-pre-wrap max-w-[70%] text-sm">
                       {msg.ai}
                     </div>
                   </div>

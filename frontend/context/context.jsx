@@ -42,6 +42,7 @@ export const ContextProvider = ({ children }) => {
         const res = await axios.get(`${url}/userdetails/${id}`);
         setDetails(res.data);
         setdetailsfilled(true);
+        setlogged(true)
       } catch (err) {
         console.log("Error fetching details:", err);
       }
@@ -56,6 +57,7 @@ export const ContextProvider = ({ children }) => {
 
     async function generateWorkout() {
       try {
+        console.log("workout started")
         const res = await axios.post(
           `${url}/workout-plan/${id}`,
           details
@@ -70,7 +72,7 @@ export const ContextProvider = ({ children }) => {
     }
 
     generateWorkout();
-  }, [id, details, workoutgenerated]);
+  }, [id, details, workoutgenerated,logged]);
 
   /* ---------------- GENERATE DIET PLAN ---------------- */
   useEffect(() => {
@@ -78,12 +80,14 @@ export const ContextProvider = ({ children }) => {
 
     async function generateDiet() {
       try {
+        console.log("diet started")
+        console.log(details)
         const res = await axios.post(
-          `${url}/diet-plan/${id}`,
+          `http://localhost:3000/diet-plan/${id}`,
           details
         );
 
-        if (res.data?.success) {
+        if (res.data) {
           setdietgenerated(true);
         }
       } catch (err) {

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 const Diet = () => {
   const [dietplan, setdietplan] = useState([]);
-  const { id, token, url } = useContext(Context);
+  const { id, token, url,dietgenerated } = useContext(Context);
 
   useEffect(() => {
     if (!id) return;
@@ -22,9 +22,9 @@ const Diet = () => {
     }
 
     fetchDiet();
-  }, [id]);
+  }, [id,dietgenerated]);
 
-
+console.log(dietgenerated)
   return (
   <div className="min-h-screen w-full px-6 py-8 relative text-white flex flex-col items-center">
    
