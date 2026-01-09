@@ -102,6 +102,9 @@ console.log(id)
               <span className="block mt-2 font-semibold">
                 Greatness loading 🚀🔥
               </span>
+              <span className="block mt-2 font-semibold">
+                Do not refersh the page !
+              </span>
             </p>
           </div>
         )}

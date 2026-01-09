@@ -97,6 +97,9 @@ console.log(dietgenerated)
               <span className="block mt-2 font-semibold">
                 Healthy habits loading 🥗🔥
               </span>
+              <span className="block mt-2 font-semibold">
+                Do not refersh the page !
+              </span>
             </p>
           </div>
         ) : (

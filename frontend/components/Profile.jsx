@@ -115,7 +115,7 @@ const Profile = () => {
       
       <div className="w-14 h-14 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-6" />
       <h1 className="text-2xl font-semibold tracking-wide">
-        Loading your workout
+        Loading your profile
       </h1>
       <p className="mt-2 text-gray-400 text-sm text-center max-w-xs">
         We’re personalizing exercises based on your goals and fitness level.
